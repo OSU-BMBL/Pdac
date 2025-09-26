@@ -7,7 +7,7 @@ In this project, we establish a **deep learning–based framework** integrating 
 
 ---
 
-## Key Findings
+## Key Findings 
 - **New classification of PDAC tumor states**: four discrete states along the senescence–EMT axis.  
 - **Clinical significance**: patients enriched for the SENE-EMT- state exhibited significantly better prognosis than all other states.  
 - **Cross-platform validation**: confirmed across Visium spatial transcriptomics, CosMX high-plex spatial imaging, and an independent clinical cohort of **34,138 patients** with treatment and follow-up data.  
@@ -32,35 +32,40 @@ In this project, we establish a **deep learning–based framework** integrating 
 ## Installation
 The installation process involves some optional and necessary steps. Here's the detailed breakdown:
 
-** 1. Create a new environment. You should use python 3.8.
+### 1) Create a new environment
 ```bash
-# Create environment (example with conda)
 conda create -n pdac python=3.8
 conda activate pdac
-** 2. PyTorch install
-CPU version (For Linux/Windows/MacOS system (torch-1.12.0+ torch_cluster-1.6.0+ torch_scatter-2.0.9+ torch_sparse-0.6.14):)
+```
+
+### 2）PyTorch install
+#### CPU version (For Linux/Windows/MacOS system (torch-1.12.0+ torch_cluster-1.6.0+ torch_scatter-2.0.9+ torch_sparse-0.6.14):)
 ```bash
 pip install torch==1.12.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 pip install torch_scatter==2.0.9 torch_sparse==0.6.14 torch_cluster==1.6.0 -f https://data.pyg.org/whl/torch-1.12.0%2Bcpu/
-GPU version
+```
+#### GPU version
 Please visit the official PyTorch website at PyTorch to select and download the CUDA-enabled version of PyTorch that best matches your system configuration.
 For linux system(You need to select the version that is compatible with your system's graphics card. For example: torch-1.12.0+ torch_cluster-1.6.0+ torch_scatter-2.1.0+ torch_sparse-0.6.16):
 ```batch
 pip install torch==1.12.0+cu102 -f https://download.pytorch.org/whl/cu102/torch_stable.html
 pip install torch_scatter==2.1.0 torch_sparse==0.6.16 torch_cluster==1.6.0 -f https://data.pyg.org/whl/torch-1.12.0%2Bcu102/
-**3. install EmitGCL
+```
+### 3）Install EmitGCL
 ```batch
 pip install --upgrade EmitGCL
-
-## Data enhancement
+```
+### 4）Data enhancement
 Prepare matched scRNA-seq data from the primary and metastatic site.
 Prepare scRNA-seq data in one of two sites.
 Run the Pancreas-matched.R to get the processed .h5ad.
 
-## Model running
+### 5）Model running
 Input: .h5ad from the Data enhancement step.
 Run the Pancreas-pn3025.py
 Output: cell embedding, predicted cell clusters.
+
+
 
 
 
