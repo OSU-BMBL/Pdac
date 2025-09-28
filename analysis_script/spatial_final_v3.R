@@ -44,14 +44,14 @@ suppressPackageStartupMessages({
   library(scales)
 })
 
-## 1) 基因集（可按需修改）
+## 1) Gene sets (can be modified as needed)
 sene_marker <- c('LMNB1','CCL4','CCL5','CXCL1','CXCL10','IL1A','IL6','TNF','MMP2','SERPINE1',
                  'IGFBP3','ANKRD1','CCL11','CD68','CXCL12','ICAM1','HMGB1','SMAD4','TP53','KRAS')
 emt_marker  <- c("ZEB1","ZEB2","SNAI1","SNAI2","TWIST1","TWIST2","VIM","FN1","CDH2","ITGB6",
                  "MMP2","MMP9","MMP14","SPARC","COL1A1","COL3A1","COL5A1","TNC","PDGFRB","TGFBI","FAP","LAMC2","LGALS1")
 cancer_marker <- c('EPCAM','KRT19','KRT7','CD44')
 
-## 2) 打分函数（按“行=基因、列=细胞”的 log-normalized矩阵取列均值）
+## 2) Scoring function (calculate column means from log-normalized matrix with rows=genes, columns=cells)
 score_by_mean <- function(seu, genes, assay = DefaultAssay(seu), slot = "data") {
   mat <- GetAssayData(seu, assay = assay, slot = slot)
   if (nrow(mat) == 0) return(setNames(rep(NA_real_, ncol(mat)), colnames(mat)))
@@ -64,7 +64,7 @@ score_by_mean <- function(seu, genes, assay = DefaultAssay(seu), slot = "data") 
   sc
 }
 
-## 3) 颜色
+## 3) Colors
 cols_state <-c("Sene+EMT+" = "#F0BCBE", 
                "Sene+EMT-" = "#EB7B75", 
                "Sene-EMT+"      = "#F2D2AB",
@@ -156,7 +156,7 @@ for (IMAGE in names(brain@images)) {
   ) +
     scale_fill_gradientn(colors = c("#F0F0F0", "#d0F0F0","#16CFBA")) +
     ggtitle(IMAGE)
-  thr <- median(cl_mean$mean_cancer, na.rm = TRUE)  # 也可换成 mean 或分位数
+  thr <- median(cl_mean$mean_cancer, na.rm = TRUE)  # can also use mean or quantiles
   cancer_clusters <- cl_mean$seurat_clusters[cl_mean$mean_cancer > thr]
   brain_subset$is_cancer <- brain_subset$seurat_clusters %in% cancer_clusters
   this_cells <- brain_subset@meta.data %>%
@@ -200,7 +200,7 @@ ord <-c('IU_PDA_T2','IU_PDA_HM2','IU_PDA_HM2_2','IU_PDA_T3','IU_PDA_HM3',
 df_long <- df_long[df_long$sample %in% ord,]
 df_long$sample <- factor(df_long$sample, levels = ord)
 
-# 画图
+# Plot
 ggplot(df_long, aes(x = sample, y = score, fill = program)) +
   geom_boxplot(width = 0.6, outlier.size = 0.3,
                position = position_dodge(width = 0.7)) +
@@ -276,7 +276,7 @@ for (IMAGE in names(brain@images)) {
     group_by(seurat_clusters) %>%
     summarise(mean_cancer = mean(cancer, na.rm = TRUE), .groups = "drop")
   
-  thr <- median(cl_mean$mean_cancer, na.rm = TRUE)*1.25  # 也可换成 mean 或分位数
+  thr <- median(cl_mean$mean_cancer, na.rm = TRUE)*1.25 
   cancer_clusters <- cl_mean$seurat_clusters[cl_mean$mean_cancer > thr]
   #cancer_clusters <- c("4","2","3") #HM2
   #cancer_clusters <- c("2") #HM2_2
@@ -422,14 +422,14 @@ brain_subset
   
   lvl_state <- levels(brain_subset$state)
   this_comp <- this_cells %>%
-    filter(is_cancer) %>%                            # 只看癌细胞
+    filter(is_cancer) %>%                            # only look at cancer cells
     mutate(state = factor(state, levels = lvl_state)) %>%
     count(sample, state, name = "cells") %>%
     group_by(sample) %>%
     complete(state = lvl_state, fill = list(cells = 0)) %>%
     mutate(prop = cells / sum(cells)) %>%
     ungroup() %>%
-    filter(state != "Other")                          # 癌细胞里没有 Other
+    filter(state != "Other")                          # no "Other" in cancer cells
   all_comp[[IMAGE]] <- this_comp
 }
 
@@ -449,8 +449,8 @@ p6 <- plots_basal[[image]]
 p7 <- plots_cluster[[image]]
 p7|p4|p1|p2|p3|p5|p6
 
-df_cells <- bind_rows(all_cells)   # 单细胞级明细：每个 spot 一行（这就是你要的 df）
-df_comp  <- bind_rows(all_comp)    # 每样本（切片）四类占比（仅癌细胞）
+df_cells <- bind_rows(all_cells)  # single-cell level details: one row per spot (this is the df you want)
+df_comp  <- bind_rows(all_comp)   # proportion of four states per sample (slice) (cancer cells only)
 
 library(patchwork )
 N <- min(15, length(plots_state))
@@ -468,20 +468,20 @@ p_bar <- ggplot(df_comp, aes(x = sample, y = prop, fill = state)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.x = element_blank())
 print(p_bar)
 
-## 9) 自检：簇内是否存在多种 state（应当允许存在；若全同，说明你不小心做成“簇级标签”了）
-# with(df_cells[df_cells$is_cancer, ], table(seurat_clusters, state))
+## 9) Self-check: whether multiple states exist within clusters (should be allowed; if all same, indicates you accidentally made "cluster-level labels")
 
-# 只看癌细胞的 boxplot（如要包含全部 spot，把这一行去掉即可）
+# Only look at cancer cell boxplot (remove this line if you want to include all spots)
 df_plot <- df_cells %>% filter(state != "Other",
                          !is.na(sample), !is.na(sene), !is.na(emt))
 
 df_plot <-df_cells[df_cells$is_cancer ==TRUE, ]
-# 长表
+
+# Long format
 df_long <- df_plot %>%
   select(sample, sene, emt) %>%
   pivot_longer(c(sene, emt), names_to = "score", values_to = "value")
 
-# 样本排序：按两分数的总体中位数从高到低
+# Sample ordering: by overall median of both scores from high to low
 ord <- df_long %>% group_by(sample) %>%
   summarise(med = median(value, na.rm = TRUE), .groups = "drop") %>%
   arrange(desc(med)) %>% pull(sample)
@@ -494,7 +494,7 @@ ord <-c('IU_PDA_T2','IU_PDA_HM2','IU_PDA_HM2_2','IU_PDA_T3','IU_PDA_HM3',
 df_long <- df_long[df_long$sample %in% ord]
 df_long$sample <- factor(df_long$sample, levels = ord)
 
-# 画图
+# Plot
 ggplot(df_long, aes(x = sample, y = value, fill = score)) +
   geom_boxplot(width = 0.6, outlier.size = 0.3,
                position = position_dodge(width = 0.7)) +
@@ -524,7 +524,7 @@ df_plot$sample <- factor(df_plot$sample, levels = ord)
 ggplot(df_plot, aes(x = sample, y = immune)) +
   geom_boxplot(width = 0.6, outlier.size = 0.3) +
   geom_jitter(
-    width = 0.15, height = 0,   # ← 普通抖动
+    width = 0.15, height = 0,   # regular jitter
     size = 0.25, alpha = 0.25,
     color = "#F6A6C1", show.legend = FALSE
   )+
@@ -549,30 +549,31 @@ library(tidyr)
 library(purrr)
 library(stringr)
 
-## 1) 只用癌细胞 spot；如要全体 spot，把 cluster_hl 过滤去掉
+## 1) Only use cancer cell spots; remove cluster_hl filter if you want all spots
 df_use <- df_plot %>%
   filter(state != "Other",
          !is.na(sample), !is.na(sene), !is.na(emt)) %>%
   mutate(
-    sample_short = sub("^IU_PDA_", "", sample),             # 例: "T2", "HM2", "HM2_2"
-    patient_id   = sub(".*?(\\d+).*", "\\1", sample_short), # 提取数字: "2"
-    is_T_sample  = grepl("^T\\d+(?:$|_)", sample_short)     # 是否是T样本
+    sample_short = sub("^IU_PDA_", "", sample),             # e.g. "T2", "HM2", "HM2_2"
+    patient_id   = sub(".*?(\\d+).*", "\\1", sample_short), # extract number: "2"
+    is_T_sample  = grepl("^T\\d+(?:$|_)", sample_short)     # whether it's a T sample
   )
 
-## 2) 长表：SENE vs EMT
+## 2) Long format: SENE vs EMT
 df_long1 <- df_use %>%
   select(sample, sample_short, patient_id, is_T_sample, sene, emt) %>%
   pivot_longer(c(sene, emt), names_to = "score", values_to = "value")
 
-## 3) 对每位患者、每个分数：T_基线 vs 该患者其它样本，两两做 Wilcoxon
+## 3) For each patient, each score: T_baseline vs other samples from that patient, pairwise Wilcoxon test
 library(purrr)
 library(stringr)
 p_tab <- df_long1 %>%
   group_by(patient_id, score) %>%
   group_modify(function(dat, key){
-    # 基线 T 样本（若有多个T，只取第一个；需要你改成特定T可自行筛选）
+    
+    # Baseline T sample (if multiple T samples, only take the first; you can modify to select specific T)
     t_samps <- unique(dat$sample[dat$is_T_sample])
-    if(length(t_samps) == 0) return(tibble())          # 没有 T，跳过
+    if(length(t_samps) == 0) return(tibble())          # no T, skip
     t_base  <- t_samps[1]
     
     others  <- setdiff(unique(dat$sample), t_base)
@@ -606,32 +607,31 @@ p_tab
 
 library(patchwork)
 
-# 1) 你自己定义的显示顺序（名字要和 names(plots_state) 完全一致）
-img_order <- ord  # 举例，按需改
+# 1) Your defined display order (names must match names(plots_state) exactly)
+img_order <- ord  # example, modify as needed
 
-# 2) 只保留当前确实存在的图，保持你定义的顺序
+# 2) Only keep currently existing plots, maintain your defined order
 keep <- img_order[img_order %in% names(plots_state)]
 stopifnot(length(keep) > 0)
 
-# （可选）只画前 N 张
+# (Optional) Only plot first N images
 N <- 10
 keep <- keep[11:20]
 
-# （可选）给每张图加上标题=名字
+# (Optional) Add title=name to each plot
 plots_ordered <- Map(`+`, plots_state[keep], lapply(keep, ggtitle))
 
-# 3) 组合与主题
+# 3) Combine and theme
 p_all <- (wrap_plots(plots_ordered, ncol = 11, guides = "collect") &
             theme(legend.position = "bottom",
                   plot.title = element_text(size = 9)))
 
-
-p_all   # 交互环境下直接显示；或 print(p_all)
-
-
+# Display
+p_all  # interactive environment direct display; or print(p_all)
 
 
-# 假设 Seurat 对象为 obj，RNA层有 EPCAM / VIM
+
+
 library(Seurat)
 library(dplyr)
 
@@ -639,27 +639,27 @@ genes <- c("EPCAM", "VIM")
 
 m <- GetAssayData(brain_subset, slot = "data")[genes, ]  # log1p normalized
 
-# 按细胞对基因做 z-score（行：基因；列：细胞）
-scale_mat <- t(scale(t(as.matrix(m))))  # 每个基因行向量标准化
+# Z-score genes by cells (rows: genes; columns: cells)
+scale_mat <- t(scale(t(as.matrix(m))))  # standardize each gene row vector
 E <- as.numeric(scale_mat["EPCAM", ])
 M <- as.numeric(scale_mat["VIM", ])
 
-# EMT 方向
+# EMT direction
 EMT_score <- M - E
 
-# 可塑性（推荐：调和均值 + 微小epsilon防0）
+# Plasticity (recommended: harmonic mean + small epsilon to prevent 0)
 eps <- 1e-6
 Plasticity_HM <- 2 / (1/(pmax(E,0)+eps) + 1/(pmax(M,0)+eps))
 
-# 或分位数到0-1后用 BPP
+# Or use quantile to 0-1 then BPP
 to01 <- function(x) (rank(x, ties.method="average")-1)/(length(x)-1)
 Eq <- to01(E); Mq <- to01(M)
 Plasticity_BPP <- 4 * Eq * Mq
 
 #obj$EMT_score <- EMT_score
-brain_subset$Plasticity <- as.numeric(Plasticity_BPP)  # 或 Plasticity_HM
+brain_subset$Plasticity <- as.numeric(Plasticity_BPP)  # or Plasticity_HM
 
-# 可视化（UMAP）
+# Visualization (UMAP)
 FeaturePlot(brain_subset, features = c("Plasticity"), cols = c("navy","white","firebrick"))
 stemness <- SpatialFeaturePlot(
   brain_subset,
@@ -674,7 +674,7 @@ stemness <- SpatialFeaturePlot(
 
 #####Mechanism 
 ####################below ###################
-# 肿瘤/免疫/基质的大类注释
+# Major cell type annotations for tumor/immune/stroma
 markers_list <- list(
   Tumor      = c("EPCAM","KRT8","KRT18","KRT19","MSLN","MUC1","CLDN4","CEACAM6","TSPAN8","AGR2"),
   CAF        = c("COL1A1","COL1A2","DCN","LUM","FAP","PDPN","TAGLN","ACTA2","COL3A1","SPARC","MMP2"),
@@ -689,20 +689,20 @@ markers_list <- list(
 
 SASP_genes <- c("IL6","CXCL8","CXCL1","CXCL2","CCL20","SERPINE1","ICAM1","MMP1","MMP3","TNFRSF10B")
 TGFb_targets <- c("TGFB1","TGFBR1","TGFBR2","SMAD3","SMAD4","SERPINE1","CTGF","TAGLN","COL1A1","COL1A2")
-TLS_genes  <- c("CXCL13","CCL19","CCL21","LTB","MS4A1","CD79A","ICOS","CXCR5")   # TLS 代表性集合
+TLS_genes  <- c("CXCL13","CCL19","CCL21","LTB","MS4A1","CD79A","ICOS","CXCR5")   # TLS representative gene set
 cDC1_genes <- markers_list$cDC1
 library(Seurat)
 library(patchwork)
 
-# 1) 选择要画的 IMAGE 名（如果你已知道就直接写 IMAGE <- "你的图名"）
+# 1) Select IMAGE name to plot (if you know it, directly write IMAGE <- "your_image_name")
 IMAGE <- names(brain_subset@images)[1]
 
 vln_by_cluster <- function(obj, features, group.by = "seurat_clusters", assay = "SCT",
                            ncol = 4, same.y.lims = TRUE, pt.size = 0.0) {
   feats <- intersect(features, rownames(obj))
-  if (length(feats) == 0) stop("这些基因都不在对象中：", paste(features, collapse=", "))
+  if (length(feats) == 0) stop("These genes are not in the object: ", paste(features, collapse=", "))
   if (length(feats) < length(features)) {
-    message("以下基因未找到，将被跳过： ",
+    message("The following genes were not found and will be skipped: ",
             paste(setdiff(features, feats), collapse=", "))
   }
   plots <- VlnPlot(
@@ -737,7 +737,7 @@ c <- SpatialDimPlot(
   cols = cluster_colors
 )
 
-# 面板基因（可替换为你的库）
+# Panel genes (can be replaced with your library)
 CAF_barrier   <- c("FAP","PDPN","TAGLN","ACTA2","COL1A1","COL1A2","SPARC","DCN","LUM")
 SASP_genes    <- c("IL6","CXCL8","CCL20","MMP1","MMP3","SERPINE1","ICAM1")
 TGFb_targets  <- c("TGFB1","TGFBR1","TGFBR2","SMAD3","SMAD4","SERPINE1","CTGF")
@@ -763,7 +763,7 @@ brain_subset <- add_score(brain_subset, CXCL12_axis,"CXCL12ax")
 brain_subset <- add_score(brain_subset, CCL2_axis,  "CCL2ax")
 brain_subset <- add_score(brain_subset, CSF1_axis,  "CSF1ax")
 
-# 空间图：原发 vs 转移各画一页（示例）
+# Spatial plots: primary vs metastasis, one page each (example)
 
 d <- SpatialFeaturePlot(brain_subset, features=c("sene","emt","CAF_1","CXCL12ax_1","SASP_1","TGFb_1","cDC1_1","TLS_1"), pt.size.factor=1.6)
 
@@ -798,7 +798,7 @@ call <- apply(ms_mat, 1, function(x){
 })
 brain_subset$celltype_anno <- factor(call, levels = names(markers_list))
 
-# 可选：对“Tumor”进行二分类（肿瘤富集区），用于后续统计
+# Optional: binary classification of "Tumor" (tumor-enriched regions) for subsequent statistics
 q75 <- quantile(brain_subset$Tumor_MS_1, 0.75, na.rm = TRUE)
 brain_subset$tumor_region <- ifelse(brain_subset$Tumor_MS_1 >= q75, "TumorHigh","Others")
 

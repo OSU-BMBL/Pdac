@@ -78,7 +78,6 @@ library(Seurat)
 library(patchwork)
 
 
-# 1) 选择要画的 IMAGE 名（如果你已知道就直接写 IMAGE <- "你的图名"）
 
 ######
 # Define a list of cluster mappings
