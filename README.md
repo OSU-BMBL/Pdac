@@ -62,7 +62,9 @@ Run the Pancreas-matched.R to get the processed .h5ad.
 
 ### 5）Model running
 Input: .h5ad from the Data enhancement step.
-Run the Pancreas-pn3025.py
+
+Run the Pancreas-pn0325.py
+
 Output: cell embedding, predicted cell clusters.
 
 
