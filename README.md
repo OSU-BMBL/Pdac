@@ -61,9 +61,11 @@ Prepare scRNA-seq data in one of two sites.
 Run the Pancreas-matched.R to get the processed .h5ad.
 
 ### 5）Model running
-Input: .h5ad from the Data enhancement step.
+Input: .h5ad from the Data enhancement step. You also can download from (here)[https://drive.google.com/drive/folders/1kx8_fiV_n9ACq1HmcK9eIdmPQdUsbLVd?usp=sharing]
 
-Run the Pancreas-pn0325.py
+```python
+cd Pdac & Pancreas-pn0325.py
+```
 
 Output: cell embedding, predicted cell clusters.
 

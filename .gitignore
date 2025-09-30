@@ -2,10 +2,11 @@
 __pycache__/
 *.py[codz]
 *$py.class
-
+*.h5ad
 # C extensions
 *.so
-
+*.out
+Metastasis_*
 # Distribution / packaging
 .Python
 build/

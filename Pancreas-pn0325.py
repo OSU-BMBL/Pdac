@@ -461,6 +461,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 from scipy.io import mmwrite
+from scipy.stats import zscore
 
 
 # Define the EmitGCL Class for Graph Neural Network training with pathway-based loss
@@ -1130,7 +1131,7 @@ def get_cancer_metastasis_genes():
 
 # Loading and Preprocessing Data
 directory = 'pn0325'
-file_path = f"/fs/ess/PAS1475/Maoteng/Pancreas_meta/{directory}/scRNA_harmony.h5ad"
+file_path = f"./scRNA_harmony.h5ad"
 
 # Reading the .h5ad file using Scanpy
 try:
@@ -1138,15 +1139,15 @@ try:
     print(f"Successfully read file: {file_path}")
 
     # Display AnnData object information
-    display(scRNA_harmony)
+    print(scRNA_harmony)
 
     # Check cell metadata (obs)
     print("\nCell metadata (obs):")
-    display(scRNA_harmony.obs.head())
+    print(scRNA_harmony.obs.head())
 
     # Check gene information (var)
     print("\nGene information (var):")
-    display(scRNA_harmony.var.head())
+    print(scRNA_harmony.var.head())
 
     # Check dimensions of expression matrix
     print("\nDimensions of expression matrix (genes, cells):")
@@ -1161,7 +1162,6 @@ scRNA_harmony.obs['Pid'] = scRNA_harmony.obs['Pid'].replace(['NA', np.nan], 'M')
 
 # Main Execution
 if __name__ == "__main__":
-    ignore_warnings()
     set_random_seed()
 
     # Define pathway directions
@@ -1169,15 +1169,16 @@ if __name__ == "__main__":
 
     # Parse command-line arguments
     (output_file, labsm, lr, wd, n_hid, nheads, nlayers, cell_size, neighbor, egrn) = parse_arguments(
-        egrn=True, output_file=f'/fs/ess/PAS1475/Maoteng/Pancreas_meta/{directory}/')
+        egrn=True, output_file=f'./')
 
     # Get the genes associated with the pathways
     pathway_genes = get_cancer_metastasis_genes()
 
     # Set output paths
-    output_file = f'/fs/ess/PAS1475/Maoteng/Pancreas_meta/{directory}/Metastasis_Result_new/'
-    attention_file = f'/fs/ess/PAS1475/Maoteng/Pancreas_meta/{directory}/Metastasis_Result_new/Attention/'
-
+    output_file = f'Metastasis_Result_new/'
+    attention_file = f'./Metastasis_Result_new/Attention/'
+    os.makedirs(output_file, exist_ok=True)
+    os.makedirs(attention_file, exist_ok=True)
     # Ensure the output directories exist
     ensure_dir(output_file)
     ensure_dir(attention_file)
