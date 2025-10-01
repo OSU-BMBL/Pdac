@@ -61,7 +61,7 @@ Prepare scRNA-seq data in one of two sites.
 Run the Pancreas-matched.R to get the processed .h5ad.
 
 ### 5）Model running
-Input: .h5ad file from the data enhancement step. You can also download it from [here](https://drive.google.com/drive/folders/1kx8_fiV_n9ACq1HmcK9eIdmPQdUsbLVd?usp=sharing).
+Input: .h5ad file from the data enhancement step. You can also download it from [here](https://drive.google.com/drive/folders/13enekPdeDxLEAkGK4rrXkeBkGtlKX3ZT?usp=sharing).
 
 ```python
 cd Pdac & Pancreas-pn0325.py
