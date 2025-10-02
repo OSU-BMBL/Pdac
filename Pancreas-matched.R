@@ -1,3 +1,4 @@
+setwd('/yourPath/Pdac/')
 # Load necessary libraries
 library(Seurat)
 library(SeuratDisk)
@@ -13,7 +14,7 @@ ad <- import("anndata")
 
 # Set the patient directories
 patients <- c("Patient1", "Patient2", "Patient3")
-base_dir <- "/fs/ess/PAS1475/Maoteng/Metastasis_new/GSE197177"
+base_dir <- "/yourPath/GSE197177"
 
 # Initialize list to store Seurat objects for each patient
 seurat_list <- list()
@@ -75,7 +76,7 @@ if ("Pid" %in% colnames(combined_seurat@meta.data)) {
 combined_seurat$Patient_Pid <- paste(combined_seurat$Patient, combined_seurat$Pid, sep = "_")
 
 # Filter files containing 'PN' in the path
-file_path <- "/fs/ess/PAS1475/Xiaoying/Pancreas_meta"
+file_path <- "/yourPath"
 rds_file_paths <- c()
 
 if (dir.exists(file_path)) {
@@ -102,7 +103,7 @@ for (rds_file_path in rds_file_paths) {
   dir_name <- dir_name[length(dir_name) - 1]
   
   # Set the save path
-  save_path <- file.path("/fs/ess/PAS1475/Maoteng/Pancreas_meta", dir_name)
+  save_path <- file.path("/yourPath", dir_name)
   
   # Create the save path if it doesn't exist
   if (!dir.exists(save_path)) {
@@ -116,8 +117,8 @@ for (rds_file_path in rds_file_paths) {
     cat("Processing file:", rds_file_path, "\n")
     
     # Get common genes between the current Seurat object and combined Seurat object
-    genes_seurat_obj <- rownames(seurat_obj@assays$RNA@counts)
-    genes_combined <- rownames(combined_seurat@assays$RNA@counts)
+    genes_seurat_obj <- rownames(seurat_obj@assays$RNA)
+    genes_combined <- rownames(combined_seurat@assays$RNA)
     common_genes <- intersect(genes_seurat_obj, genes_combined)
     cat("Number of common genes:", length(common_genes), "\n")
     
@@ -180,3 +181,31 @@ for (rds_file_path in rds_file_paths) {
     cat("File does not exist, please check the path:", rds_file_path, "\n")
   }
 }
+
+####
+sessionInfo()
+#############
+# R version 4.4.0 (2024-04-24)
+# Platform: x86_64-pc-linux-gnu
+# Running under: Red Hat Enterprise Linux 9.4 (Plow)
+#
+# Matrix products: default
+# BLAS/LAPACK: /apps/spack/0.21/ascend/linux-rhel9-zen2/intel-oneapi-mkl/gcc/11.4.1/2023.2.0-gwnin2p/mkl/2023.2.0/lib/intel64/libmkl_gf_lp64.so.2;  LAPACK version 3.10.1
+#
+# locale:
+# [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8       
+# [4] LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+# [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                  LC_ADDRESS=C              
+# [10] LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+#
+# time zone: US/Eastern
+# tzcode source: internal
+#
+# attached base packages:
+# [1] stats     graphics  grDevices utils     datasets  methods   base     
+#
+# other attached packages:
+# [1] future_1.67.0         patchwork_1.3.2       dplyr_1.1.4           harmony_1.2.3        
+# [5] Rcpp_1.1.0            reticulate_1.43.0     ggplot2_3.5.2         Matrix_1.7-4         
+# [9] SeuratDisk_0.0.0.9021 Seurat_5.3.0          SeuratObject_5.2.0    sp_2.2-0             
+
