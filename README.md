@@ -76,3 +76,22 @@ Output: cell embedding, predicted cell clusters.
 
 
 
+
+---
+
+## Typical Installation Time
+Steps 1–3 (conda environment, PyTorch, PyG extensions and EmitGCL) take about **2 minutes** with the GPU build (`torch==1.12.0+cu113`, prebuilt PyG wheels), and about **15 minutes** with the CPU build, where `torch_scatter`, `torch_sparse` and `torch_cluster` are compiled from source. Download of the input `.h5ad` (about 9.9 GB) is not included.
+
+Reference environment: BMBL server (not OSC), AMD EPYC 7H12 (128 cores), ~1 TB RAM, NVIDIA A100 80GB, RHEL 8.10, Python 3.8, torch 1.12.0+cu113, torch_geometric 2.1.0, EmitGCL 0.2.1.
+
+> Note: the GPU command in step 2 uses `cu102`, which does not support A100 GPUs. We used `cu113` (`pip install torch==1.12.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html` and `-f https://data.pyg.org/whl/torch-1.12.0%2Bcu113.html` for the PyG extensions).
+
+## Expected Demo Runtime
+Demo command: `python Pancreas-pn0325.py` with `scRNA_harmony.h5ad` in the working directory (step 5).
+
+- **Dataset:** `scRNA_harmony.h5ad`, 77,240 cells × 31,915 genes; 45,312 cells (primary and metastatic samples) are used for training.
+- **Workflow:** loading and batch partitioning, NodeDimensionReduction training (10 epochs), EmitGCL training (10 epochs), then prediction and attention output.
+- **Runtime:** about **20–25 hours** on one A100 GPU. Loading and batch partitioning take about 20 minutes, and each training epoch takes about 1 hour (measured for the first epoch). The total is this per-epoch time over the 20 epochs.
+- **Resources:** 1 GPU (~2.6 GB GPU memory), ~11 GB RAM, and multiple CPU cores (batch partitioning uses 48 worker processes). Training is largely CPU-bound, so the GPU gives little speed-up over the CPU build.
+
+These times were obtained on the BMBL server described above. They have not been measured on OSC or on a desktop computer.
